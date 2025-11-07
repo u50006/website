@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course – EduPortal</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1 id="courseTitle">Course</h1>
+    <nav>
+      <a href="student-dashboard.html">Back to Dashboard</a>
+    </nav>
+  </header>
+  <main>
+    <div class="card">
+      <h2>Modules</h2>
+      <div id="moduleList"></div>
+      <div id="addModuleSection" style="margin-top:20px; display:none;">
+        <h3>Add Module</h3>
+        <form id="moduleForm">
+          <div class="form-group">
+            <label for="moduleTitle">Module Title</label>
+            <input type="text" id="moduleTitle" required />
+          </div>
+          <div class="form-group">
+            <label for="moduleContent">Content</label>
+            <textarea id="moduleContent" rows="4" required></textarea>
+          </div>
+          <button type="submit" class="button">Add Module</button>
+        </form>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Quizzes</h2>
+      <div id="quizList"></div>
+      <div id="addQuizSection" style="margin-top:20px; display:none;">
+        <h3>Create Quiz</h3>
+        <form id="quizForm">
+          <div class="form-group">
+            <label for="quizTitle">Quiz Title</label>
+            <input type="text" id="quizTitle" required />
+          </div>
+          <div class="form-group">
+            <label for="questionText">Question</label>
+            <input type="text" id="questionText" required />
+          </div>
+          <div class="form-group">
+            <label>Options (comma separated)</label>
+            <input type="text" id="questionOptions" placeholder="Option1,Option2,Option3,Option4" required />
+          </div>
+          <div class="form-group">
+            <label for="correctOption">Correct Option Index (0-3)</label>
+            <input type="number" id="correctOption" min="0" max="3" required />
+          </div>
+          <button type="submit" class="button">Create Quiz</button>
+        </form>
+      </div>
+    </div>
+  </main>
+  <script src="script.js"></script>
+  <script>
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+    let courseId;
+    let currentUser;
+    function loadCourse() {
+      courseId = parseInt(getQueryParam('courseId'));
+      const data = getData();
+      const course = data.courses.find(c => c.id === courseId);
+      if (!course) return;
+      document.getElementById('courseTitle').textContent = course.title;
+      currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      // Render modules
+      const moduleList = document.getElementById('moduleList');
+      moduleList.innerHTML = '';
+      if (course.modules && course.modules.length > 0) {
+        course.modules.forEach((m, idx) => {
+          const modDiv = document.createElement('div');
+          modDiv.className = 'card';
+          modDiv.innerHTML = `<h3>${idx + 1}. ${m.title}</h3><p>${m.content}</p>`;
+          moduleList.appendChild(modDiv);
+        });
+      } else {
+        moduleList.textContent = 'No modules added yet.';
+      }
+      // Render quizzes
+      const quizList = document.getElementById('quizList');
+      quizList.innerHTML = '';
+      if (course.quizzes && course.quizzes.length > 0) {
+        course.quizzes.forEach(q => {
+          const div = document.createElement('div');
+          div.className = 'card';
+          // Display score if available
+          let scoreInfo = '';
+          if (currentUser.quizResults && currentUser.quizResults[`${courseId}_${q.id}`] !== undefined) {
+            const score = currentUser.quizResults[`${courseId}_${q.id}`];
+            scoreInfo = ` – Your score: ${score}%`;
+          }
+          div.innerHTML = `<h3>${q.title}</h3><button class="button" onclick="startQuiz(${courseId}, ${q.id})">Take Quiz</button><span>${scoreInfo}</span>`;
+          quizList.appendChild(div);
+        });
+      } else {
+        quizList.textContent = 'No quizzes available.';
+      }
+      // Show add module/quiz sections only for teachers of this course
+      if (currentUser.role === 'teacher' && currentUser.id === course.teacher) {
+        document.getElementById('addModuleSection').style.display = 'block';
+        document.getElementById('addQuizSection').style.display = 'block';
+      }
+    }
+    // Handle module form submission
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCourse();
+      const moduleForm = document.getElementById('moduleForm');
+      moduleForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('moduleTitle').value;
+        const content = document.getElementById('moduleContent').value;
+        addModule(courseId, title, content);
+        moduleForm.reset();
+        loadCourse();
+      });
+      const quizForm = document.getElementById('quizForm');
+      quizForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const qTitle = document.getElementById('quizTitle').value;
+        const qText = document.getElementById('questionText').value;
+        const optionsString = document.getElementById('questionOptions').value;
+        const options = optionsString.split(',').map(s => s.trim()).filter(s => s);
+        const correct = parseInt(document.getElementById('correctOption').value);
+        const newQuizId = addQuiz(courseId, qTitle);
+        addQuestionToQuiz(courseId, newQuizId, { text: qText, options, answer: correct });
+        quizForm.reset();
+        loadCourse();
+      });
+    });
+    // Start quiz by navigating to quiz page
+    function startQuiz(cId, qId) {
+      window.location.href = `quiz.html?courseId=${cId}&quizId=${qId}`;
+    }
+  </script>
+</body>
+</html>

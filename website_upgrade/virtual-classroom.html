@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Virtual Classroom – EduPortal</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Virtual Classroom</h1>
+    <nav>
+      <a href="student-dashboard.html">Back to Dashboard</a>
+    </nav>
+  </header>
+  <main>
+    <div class="card">
+      <h2 id="classTitle">Virtual Class</h2>
+      <p id="classInfo"></p>
+      <div style="margin-top:20px">
+        <h3>Video/Audio Session</h3>
+        <div style="background:#000; color:#fff; height:200px; display:flex; align-items:center; justify-content:center; border-radius:8px;">
+          <p>This is a placeholder for a live video session.</p>
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <h3>Interactive Whiteboard</h3>
+        <canvas id="whiteboard" width="600" height="400" style="border:1px solid #cbd5e0; background:#fff; cursor: crosshair;"></canvas>
+      </div>
+      <div style="margin-top:20px">
+        <h3>Class Chat</h3>
+        <div id="classChatBox" class="chat-box"></div>
+        <div class="chat-input">
+          <input type="text" id="classChatInput" placeholder="Type a message..." />
+          <button id="sendClassChat">Send</button>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="script.js"></script>
+  <script>
+    // Parse query parameters
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    // Load class details and render whiteboard/chat
+    function initVirtualClass() {
+      const classId = parseInt(getQueryParam('classId'));
+      const data = getData();
+      const cls = (data.classes || []).find(c => c.id === classId);
+      if (!cls) {
+        document.getElementById('classTitle').textContent = 'Class Not Found';
+        return;
+      }
+      const course = data.courses.find(c => c.id === cls.courseId);
+      const dateStr = new Date(cls.datetime).toLocaleString();
+      document.getElementById('classTitle').textContent = `${course?.title || ''}: ${cls.topic}`;
+      document.getElementById('classInfo').textContent = `Scheduled on ${dateStr}`;
+      // Whiteboard drawing implementation
+      const canvas = document.getElementById('whiteboard');
+      const ctx = canvas.getContext('2d');
+      let drawing = false;
+      let prevX = 0, prevY = 0;
+      function startDraw(e) {
+        drawing = true;
+        [prevX, prevY] = [e.offsetX, e.offsetY];
+      }
+      function draw(e) {
+        if (!drawing) return;
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.strokeStyle = '#2b6cb0';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        [prevX, prevY] = [e.offsetX, e.offsetY];
+      }
+      function endDraw() {
+        drawing = false;
+      }
+      canvas.addEventListener('mousedown', startDraw);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', endDraw);
+      canvas.addEventListener('mouseleave', endDraw);
+      // Chat functionality scoped per class
+      function loadClassMessages() {
+        const all = JSON.parse(localStorage.getItem('classChats')) || {};
+        const messages = all[classId] || [];
+        const chatBox = document.getElementById('classChatBox');
+        chatBox.innerHTML = '';
+        messages.forEach(msg => {
+          const p = document.createElement('p');
+          p.textContent = `${msg.name}: ${msg.text}`;
+          chatBox.appendChild(p);
+        });
+      }
+      function sendClassMessage() {
+        const input = document.getElementById('classChatInput');
+        const text = input.value.trim();
+        if (!text) return;
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const all = JSON.parse(localStorage.getItem('classChats')) || {};
+        if (!all[classId]) all[classId] = [];
+        all[classId].push({ name: currentUser.name, text });
+        localStorage.setItem('classChats', JSON.stringify(all));
+        input.value = '';
+        loadClassMessages();
+      }
+      document.getElementById('sendClassChat').addEventListener('click', sendClassMessage);
+      loadClassMessages();
+    }
+    window.addEventListener('DOMContentLoaded', initVirtualClass);
+  </script>
+</body>
+</html>

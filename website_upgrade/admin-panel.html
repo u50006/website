@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel – EduPortal</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body data-page="admin-panel">
+  <header>
+    <h1>EduPortal</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="#" onclick="logout(); window.location.href='index.html'">Logout</a>
+    </nav>
+  </header>
+  <main>
+    <h2>Admin Dashboard</h2>
+    <div class="card">
+      <h3>User Management</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody id="userTableBody"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Course Management</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Course Title</th>
+            <th>Teacher</th>
+            <th>Progress</th>
+          </tr>
+        </thead>
+        <tbody id="courseTableBody"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Analytics</h3>
+      <div id="adminChart" class="chart-container"></div>
+    </div>
+
+    <div class="card">
+      <h3>HR Management</h3>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Position</th><th>Salary</th></tr>
+        </thead>
+        <tbody id="employeeTableBody"></tbody>
+      </table>
+      <h4>Add Employee</h4>
+      <form id="employeeForm">
+        <div class="form-group">
+          <label for="empName">Name</label>
+          <input type="text" id="empName" required />
+        </div>
+        <div class="form-group">
+          <label for="empPosition">Position</label>
+          <input type="text" id="empPosition" required />
+        </div>
+        <div class="form-group">
+          <label for="empSalary">Salary</label>
+          <input type="number" id="empSalary" required />
+        </div>
+        <button type="submit" class="button">Add Employee</button>
+      </form>
+    </div>
+  </main>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // Render aggregated analytics chart (e.g. average progress per course)
+      const data = getData();
+      const chartDom = document.getElementById('adminChart');
+      const chart = echarts.init(chartDom);
+      const option = {
+        title: { text: 'Average Course Progress' },
+        xAxis: { type: 'category', data: data.courses.map(c => c.title) },
+        yAxis: { type: 'value' },
+        series: [{ data: data.courses.map(c => c.progress), type: 'bar' }]
+      };
+      chart.setOption(option);
+
+      // Render employee table
+      const empBody = document.getElementById('employeeTableBody');
+      empBody.innerHTML = '';
+      (data.employees || []).forEach(emp => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${emp.name}</td><td>${emp.position}</td><td>${emp.salary}</td>`;
+        empBody.appendChild(row);
+      });
+      // Handle new employee form
+      const empForm = document.getElementById('employeeForm');
+      empForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('empName').value;
+        const position = document.getElementById('empPosition').value;
+        const salary = parseFloat(document.getElementById('empSalary').value);
+        const data = getData();
+        if (!data.employees) data.employees = [];
+        const newId = data.employees.length > 0 ? Math.max(...data.employees.map(e => e.id)) + 1 : 1;
+        data.employees.push({ id: newId, name, position, salary });
+        saveData(data);
+        // refresh table
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${name}</td><td>${position}</td><td>${salary}</td>`;
+        empBody.appendChild(row);
+        empForm.reset();
+      });
+    });
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>
