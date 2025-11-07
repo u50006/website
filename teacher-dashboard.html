@@ -79,6 +79,9 @@
       const course = data.courses.find(c => c.id === courseId);
       course.assignments.push({ title, due: dueDate });
       saveData(data);
+      // notify all students enrolled in this course about the new assignment
+      const enrolled = data.users.filter(u => u.courses && u.courses.includes(course.id)).map(u => u.id);
+      addNotification(enrolled, `New assignment "${title}" due on ${dueDate} for ${course.title}`);
       alert('Assignment created');
       // reset form
       document.getElementById('assignmentTitle').value = '';
@@ -111,6 +114,11 @@
         const topic = document.getElementById('scheduleTopic').value;
         if (!datetime || !topic) return;
         scheduleClass(cId, datetime, topic, currentUser.id);
+        // notify students enrolled in this course about the scheduled class
+        const freshData = getData();
+        const enrolled2 = freshData.users.filter(u => u.courses && u.courses.includes(cId)).map(u => u.id);
+        const courseName = freshData.courses.find(c => c.id === cId)?.title || '';
+        addNotification(enrolled2, `Class scheduled: ${topic} on ${datetime} for ${courseName}`);
         alert('Class scheduled');
         scheduleForm.reset();
         loadTeacherUpcoming();

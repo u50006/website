@@ -90,6 +90,8 @@ function initDemoData() {
   if (!localStorage.getItem('eduData')) {
     localStorage.setItem('eduData', JSON.stringify(demoData));
   }
+  // ensure notifications array exists in the data structure
+  ensureNotifications();
 }
 
 // Helper to get data
@@ -99,6 +101,59 @@ function getData() {
 
 function saveData(data) {
   localStorage.setItem('eduData', JSON.stringify(data));
+}
+
+/* ======================================================================
+ * Notification helpers
+ *
+ * These functions provide a simple notification system for the platform.
+ * Notifications are stored in the eduData object under `notifications`,
+ * each with an id, userId, message and read flag.  Teachers can create
+ * notifications to inform enrolled students about new assignments or
+ * scheduled classes.  Students can view and mark notifications as read.
+ */
+
+// Ensure the notifications array exists on the data object.
+function ensureNotifications() {
+  const data = getData();
+  if (!data.notifications) {
+    data.notifications = [];
+    saveData(data);
+  }
+}
+
+// Add a notification message for one or more users.  Accepts an array
+// of userIds and a message string.  Each notification is assigned a
+// unique id and marked as unread.
+function addNotification(userIds, message) {
+  ensureNotifications();
+  const data = getData();
+  const notifications = data.notifications || [];
+  let nextId = notifications.length > 0 ? Math.max(...notifications.map(n => n.id)) + 1 : 1;
+  userIds.forEach(uid => {
+    notifications.push({ id: nextId++, userId: uid, message, read: false });
+  });
+  data.notifications = notifications;
+  saveData(data);
+}
+
+// Retrieve notifications for a specific user.  Returns an array of
+// notifications sorted by id (ascending).
+function getNotificationsForUser(userId) {
+  ensureNotifications();
+  const data = getData();
+  return (data.notifications || []).filter(n => n.userId === userId);
+}
+
+// Mark a specific notification as read by id.
+function markNotificationRead(notificationId) {
+  const data = getData();
+  if (!data.notifications) return;
+  const notif = data.notifications.find(n => n.id === notificationId);
+  if (notif) {
+    notif.read = true;
+    saveData(data);
+  }
 }
 
 /* ======================================================================
@@ -362,6 +417,35 @@ function renderStudentDashboard() {
     chart.setOption(option);
   } else {
     chartDom.innerHTML = 'No courses enrolled yet.';
+  }
+
+  // Render notifications for the student
+  const notifContainer = document.getElementById('studentNotifications');
+  if (notifContainer) {
+    notifContainer.innerHTML = '';
+    const notifs = getNotificationsForUser(user.id);
+    if (notifs.length === 0) {
+      const li = document.createElement('li');
+      li.textContent = 'No notifications';
+      notifContainer.appendChild(li);
+    } else {
+      notifs.forEach(n => {
+        const li = document.createElement('li');
+        li.textContent = n.message;
+        if (!n.read) {
+          const btn = document.createElement('button');
+          btn.className = 'button';
+          btn.style.marginLeft = '10px';
+          btn.textContent = 'Mark Read';
+          btn.addEventListener('click', () => {
+            markNotificationRead(n.id);
+            renderStudentDashboard();
+          });
+          li.appendChild(btn);
+        }
+        notifContainer.appendChild(li);
+      });
+    }
   }
   // Chat messages
   loadChatMessages();
