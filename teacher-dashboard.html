@@ -1,698 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Dashboard - EduAcademy</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-        .dashboard-bg { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); }
-        .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
-        .sidebar { transition: transform 0.3s ease; }
-        .mobile-sidebar { transform: translateX(-100%); }
-        .mobile-sidebar.open { transform: translateX(0); }
-        .notification-badge { animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .calendar-day { transition: all 0.2s ease; }
-        .calendar-day:hover { background-color: #f3f4f6; }
-        .calendar-day.has-class { background-color: #dbeafe; border-color: #3b82f6; }
-        .calendar-day.selected { background-color: #3b82f6; color: white; }
-        .modal { backdrop-filter: blur(4px); }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Dashboard – EduPortal</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 </head>
-<body class="dashboard-bg min-h-screen">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <button onclick="toggleMobileSidebar()" class="md:hidden mr-4 p-2 rounded-lg hover:bg-gray-100">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button>
-                    <div class="text-2xl font-bold text-blue-600">EduAcademy</div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <button class="relative p-2 text-gray-600 hover:text-gray-900">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M9 11h.01M9 8h.01"></path>
-                        </svg>
-                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center notification-badge">5</span>
-                    </button>
-                    <div class="flex items-center space-x-3">
-                        <img src="https://kimi-web-img.moonshot.cn/img/virtualteacherassociation.org/091ab63fc33a53f05b4c41aa7b124490abbb6a41.jpg" alt="Teacher Avatar" class="w-8 h-8 rounded-full object-cover">
-                        <span class="hidden md:block text-gray-700 font-medium">Dr. Sarah Johnson</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+<body data-page="teacher-dashboard">
+  <header>
+    <h1>EduPortal</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="#" onclick="logout(); window.location.href='index.html'">Logout</a>
     </nav>
-
-    <div class="flex">
-        <!-- Sidebar -->
-        <div id="sidebar" class="sidebar fixed left-0 top-16 h-full w-64 bg-white shadow-lg z-30 mobile-sidebar md:translate-x-0">
-            <div class="p-6">
-                <div class="text-center mb-6">
-                    <img src="https://kimi-web-img.moonshot.cn/img/virtualteacherassociation.org/091ab63fc33a53f05b4c41aa7b124490abbb6a41.jpg" alt="Teacher Avatar" class="w-20 h-20 rounded-full mx-auto mb-3 object-cover">
-                    <h3 class="text-lg font-semibold text-gray-900">Dr. Sarah Johnson</h3>
-                    <p class="text-gray-600 text-sm">Mathematics & Physics</p>
-                </div>
-                
-                <nav class="space-y-2">
-                    <a href="#overview" onclick="showSection('overview')" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-50 text-blue-600 font-medium">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"></path>
-                        </svg>
-                        <span>Overview</span>
-                    </a>
-                    <a href="#classes" onclick="showSection('classes')" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        <span>Class Schedule</span>
-                    </a>
-                    <a href="#students" onclick="showSection('students')" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                        </svg>
-                        <span>Student Management</span>
-                    </a>
-                    <a href="#assignments" onclick="showSection('assignments')" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                        </svg>
-                        <span>Assignments</span>
-                        <span class="ml-auto bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">8</span>
-                    </a>
-                    <a href="#materials" onclick="showSection('materials')" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                        </svg>
-                        <span>Course Materials</span>
-                    </a>
-                    <a href="#analytics" onclick="showSection('analytics')" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                        <span>Analytics</span>
-                    </a>
-                    <a href="#messages" onclick="showSection('messages')" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                        </svg>
-                        <span>Messages</span>
-                        <span class="ml-auto bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">3</span>
-                    </a>
-                </nav>
-            </div>
+  </header>
+  <main>
+    <h2>Welcome, <span id="teacherName"></span>!</h2>
+    <div class="dashboard-grid">
+      <div class="card">
+        <h3>Your Classes</h3>
+        <div id="teacherClasses"></div>
+      </div>
+      <div class="card">
+        <h3>Analytics</h3>
+        <div id="teacherChart" class="chart-container"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Create Assignment</h3>
+      <form onsubmit="createAssignment(event)">
+        <div class="form-group">
+          <label for="assignmentTitle">Assignment Title</label>
+          <input type="text" id="assignmentTitle" required />
         </div>
-
-        <!-- Overlay for mobile -->
-        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden" onclick="toggleMobileSidebar()"></div>
-
-        <!-- Main Content -->
-        <main class="flex-1 md:ml-64 p-6">
-            <!-- Overview Section -->
-            <div id="overview-section" class="section">
-                <div class="mb-8">
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Teacher Dashboard</h1>
-                    <p class="text-gray-600">Manage your classes, students, and teaching materials.</p>
-                </div>
-
-                <!-- Quick Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-600 text-sm">Active Classes</p>
-                                <p class="text-2xl font-bold text-gray-900">3</p>
-                            </div>
-                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-600 text-sm">Total Students</p>
-                                <p class="text-2xl font-bold text-gray-900">156</p>
-                            </div>
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-600 text-sm">Pending Assignments</p>
-                                <p class="text-2xl font-bold text-gray-900">24</p>
-                            </div>
-                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-600 text-sm">Avg. Class Rating</p>
-                                <p class="text-2xl font-bold text-gray-900">4.8</p>
-                            </div>
-                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Activity & Quick Actions -->
-                <div class="grid lg:grid-cols-2 gap-8 mb-8">
-                    <div class="bg-white rounded-xl p-6 shadow-sm">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-                        <div class="space-y-4">
-                            <div class="flex items-start space-x-3">
-                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm text-gray-900">Assignment "Problem Set #7" graded</p>
-                                    <p class="text-xs text-gray-500">Advanced Calculus • 2 hours ago</p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start space-x-3">
-                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm text-gray-900">New student enrolled in Python Programming</p>
-                                    <p class="text-xs text-gray-500">Python Programming • 4 hours ago</p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start space-x-3">
-                                <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm text-gray-900">New message from student</p>
-                                    <p class="text-xs text-gray-500">Alex Johnson • 6 hours ago</p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start space-x-3">
-                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm text-gray-900">Class scheduled for tomorrow</p>
-                                    <p class="text-xs text-gray-500">Advanced Calculus • Yesterday</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl p-6 shadow-sm">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <button onclick="showCreateAssignmentModal()" class="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors text-center">
-                                <svg class="w-8 h-8 text-blue-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                <p class="text-sm font-medium text-gray-900">Create Assignment</p>
-                            </button>
-
-                            <button onclick="showScheduleClassModal()" class="p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors text-center">
-                                <svg class="w-8 h-8 text-green-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <p class="text-sm font-medium text-gray-900">Schedule Class</p>
-                            </button>
-
-                            <button onclick="showUploadMaterialModal()" class="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors text-center">
-                                <svg class="w-8 h-8 text-purple-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                </svg>
-                                <p class="text-sm font-medium text-gray-900">Upload Material</p>
-                            </button>
-
-                            <button onclick="showGradeAssignmentsModal()" class="p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors text-center">
-                                <svg class="w-8 h-8 text-yellow-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <p class="text-sm font-medium text-gray-900">Grade Work</p>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Class Performance Chart -->
-                <div class="bg-white rounded-xl p-6 shadow-sm">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Class Performance Overview</h3>
-                    <div id="classPerformanceChart" style="height: 300px;"></div>
-                </div>
-            </div>
-
-            <!-- Class Schedule Section -->
-            <div id="classes-section" class="section hidden">
-                <div class="mb-8">
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Class Schedule</h1>
-                    <p class="text-gray-600">Manage your class schedules and view upcoming sessions.</p>
-                </div>
-
-                <div class="grid lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2">
-                        <div class="bg-white rounded-xl p-6 shadow-sm">
-                            <div class="flex items-center justify-between mb-6">
-                                <h3 class="text-lg font-semibold text-gray-900">December 2024</h3>
-                                <div class="flex space-x-2">
-                                    <button class="p-2 hover:bg-gray-100 rounded-lg">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                                        </svg>
-                                    </button>
-                                    <button class="p-2 hover:bg-gray-100 rounded-lg">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-7 gap-1 mb-4">
-                                <div class="text-center text-sm font-medium text-gray-600 p-2">Sun</div>
-                                <div class="text-center text-sm font-medium text-gray-600 p-2">Mon</div>
-                                <div class="text-center text-sm font-medium text-gray-600 p-2">Tue</div>
-                                <div class="text-center text-sm font-medium text-gray-600 p-2">Wed</div>
-                                <div class="text-center text-sm font-medium text-gray-600 p-2">Thu</div>
-                                <div class="text-center text-sm font-medium text-gray-600 p-2">Fri</div>
-                                <div class="text-center text-sm font-medium text-gray-600 p-2">Sat</div>
-                            </div>
-
-                            <div class="grid grid-cols-7 gap-1" id="calendar-grid">
-                                <!-- Calendar days will be populated by JavaScript -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="space-y-6">
-                        <div class="bg-white rounded-xl p-6 shadow-sm">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Today's Classes</h3>
-                            <div class="space-y-3">
-                                <div class="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-                                    <div class="w-3 h-3 bg-blue-600 rounded-full"></div>
-                                    <div class="flex-1">
-                                        <p class="font-medium text-gray-900">Advanced Calculus</p>
-                                        <p class="text-sm text-gray-600">10:00 AM - 11:30 AM</p>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                                    <div class="w-3 h-3 bg-green-600 rounded-full"></div>
-                                    <div class="flex-1">
-                                        <p class="font-medium text-gray-900">Python Programming</p>
-                                        <p class="text-sm text-gray-600">2:00 PM - 3:30 PM</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-xl p-6 shadow-sm">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Upcoming Classes</h3>
-                            <div class="space-y-3">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
-                                    <div class="flex-1">
-                                        <p class="font-medium text-gray-900">Organic Chemistry</p>
-                                        <p class="text-sm text-gray-600">Tomorrow, 9:00 AM</p>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
-                                    <div class="flex-1">
-                                        <p class="font-medium text-gray-900">Advanced Calculus</p>
-                                        <p class="text-sm text-gray-600">Dec 16, 10:00 AM</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Remaining sections will be implemented -->
-            <div id="students-section" class="section hidden">
-                <div class="text-center py-12">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Student Management</h2>
-                    <p class="text-gray-600">Manage your students and track their progress.</p>
-                </div>
-            </div>
-
-            <div id="assignments-section" class="section hidden">
-                <div class="text-center py-12">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Assignments</h2>
-                    <p class="text-gray-600">Create and manage assignments for your classes.</p>
-                </div>
-            </div>
-
-            <div id="materials-section" class="section hidden">
-                <div class="text-center py-12">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Course Materials</h2>
-                    <p class="text-gray-600">Upload and organize your teaching materials.</p>
-                </div>
-            </div>
-
-            <div id="analytics-section" class="section hidden">
-                <div class="text-center py-12">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Analytics</h2>
-                    <p class="text-gray-600">View detailed analytics and performance metrics.</p>
-                </div>
-            </div>
-
-            <div id="messages-section" class="section hidden">
-                <div class="text-center py-12">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Messages</h2>
-                    <p class="text-gray-600">Communicate with students and colleagues.</p>
-                </div>
-            </div>
-        </main>
+        <div class="form-group">
+          <label for="assignmentCourse">Course</label>
+          <select id="assignmentCourse"></select>
+        </div>
+        <div class="form-group">
+          <label for="assignmentDue">Due Date</label>
+          <input type="date" id="assignmentDue" required />
+        </div>
+        <button type="submit" class="button">Create</button>
+      </form>
     </div>
 
-    <!-- Create Assignment Modal -->
-    <div id="createAssignmentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center modal">
-        <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-2xl font-bold text-gray-900">Create New Assignment</h3>
-                <button onclick="hideCreateAssignmentModal()" class="text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <form onsubmit="handleCreateAssignment(event)">
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-medium mb-2">Assignment Title</label>
-                    <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter assignment title" required>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-medium mb-2">Course</label>
-                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                        <option value="">Select a course</option>
-                        <option value="calculus">Advanced Calculus</option>
-                        <option value="python">Python Programming</option>
-                        <option value="chemistry">Organic Chemistry</option>
-                    </select>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-medium mb-2">Description</label>
-                    <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="4" placeholder="Describe the assignment requirements" required></textarea>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Due Date</label>
-                        <input type="date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Points</label>
-                        <input type="number" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="100" required>
-                    </div>
-                </div>
-                
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-medium mb-2">Assignment Type</label>
-                    <div class="grid grid-cols-3 gap-3">
-                        <label class="flex items-center space-x-2">
-                            <input type="radio" name="type" value="homework" class="text-blue-600" checked>
-                            <span class="text-gray-700">Homework</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="radio" name="type" value="quiz" class="text-blue-600">
-                            <span class="text-gray-700">Quiz</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="radio" name="type" value="project" class="text-blue-600">
-                            <span class="text-gray-700">Project</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="flex space-x-4">
-                    <button type="button" onclick="hideCreateAssignmentModal()" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors">Cancel</button>
-                    <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">Create Assignment</button>
-                </div>
-            </form>
+    <div class="card">
+      <h3>Schedule Class</h3>
+      <form id="scheduleForm">
+        <div class="form-group">
+          <label for="scheduleCourse">Course</label>
+          <select id="scheduleCourse"></select>
         </div>
+        <div class="form-group">
+          <label for="scheduleDate">Date & Time (YYYY-MM-DDTHH:MM)</label>
+          <!-- Use a text input instead of datetime-local to allow manual entry in this demo. -->
+          <input type="text" id="scheduleDate" placeholder="2025-11-30T10:00" required />
+        </div>
+        <div class="form-group">
+          <label for="scheduleTopic">Topic</label>
+          <input type="text" id="scheduleTopic" required />
+        </div>
+        <button type="submit" class="button">Schedule</button>
+      </form>
+      <h4 style="margin-top:20px">Your Upcoming Classes</h4>
+      <ul id="teacherUpcoming" class="leaderboard"></ul>
     </div>
-
-    <script>
-        // Initialize teacher dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeTeacherDashboard();
-        });
-
-        function initializeTeacherDashboard() {
-            // Initialize class performance chart
-            initializeClassPerformanceChart();
-            
-            // Initialize calendar
-            initializeCalendar();
-            
-            // Show overview section by default
-            showSection('overview');
+  </main>
+  <script>
+    function createAssignment(e) {
+      e.preventDefault();
+      // gather form values
+      const title = document.getElementById('assignmentTitle').value;
+      const courseId = parseInt(document.getElementById('assignmentCourse').value);
+      const dueDate = document.getElementById('assignmentDue').value;
+      const data = getData();
+      const course = data.courses.find(c => c.id === courseId);
+      course.assignments.push({ title, due: dueDate });
+      saveData(data);
+      alert('Assignment created');
+      // reset form
+      document.getElementById('assignmentTitle').value = '';
+      document.getElementById('assignmentDue').value = '';
+    }
+    // Populate course options for teacher
+    window.addEventListener('DOMContentLoaded', () => {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      const data = getData();
+      // Populate both assignment and schedule selects
+      const assignmentSelect = document.getElementById('assignmentCourse');
+      const scheduleSelect = document.getElementById('scheduleCourse');
+      const teacherCourses = data.courses.filter(c => c.teacher === currentUser.id);
+      teacherCourses.forEach(course => {
+        const opt1 = document.createElement('option');
+        opt1.value = course.id;
+        opt1.textContent = course.title;
+        assignmentSelect.appendChild(opt1);
+        const opt2 = document.createElement('option');
+        opt2.value = course.id;
+        opt2.textContent = course.title;
+        scheduleSelect.appendChild(opt2);
+      });
+      // Handle scheduling form submission
+      const scheduleForm = document.getElementById('scheduleForm');
+      scheduleForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const cId = parseInt(document.getElementById('scheduleCourse').value);
+        const datetime = document.getElementById('scheduleDate').value;
+        const topic = document.getElementById('scheduleTopic').value;
+        if (!datetime || !topic) return;
+        scheduleClass(cId, datetime, topic, currentUser.id);
+        alert('Class scheduled');
+        scheduleForm.reset();
+        loadTeacherUpcoming();
+      });
+      // Load teacher upcoming classes list
+      function loadTeacherUpcoming() {
+        const upcoming = getUpcomingClassesForUser(currentUser);
+        const list = document.getElementById('teacherUpcoming');
+        list.innerHTML = '';
+        if (upcoming.length === 0) {
+          const li = document.createElement('li');
+          li.textContent = 'No scheduled classes';
+          list.appendChild(li);
+        } else {
+          upcoming.forEach(cls => {
+            const courseName = data.courses.find(c => c.id === cls.courseId)?.title || '';
+            const dateStr = new Date(cls.datetime).toLocaleString();
+            const li = document.createElement('li');
+            li.textContent = `${courseName} – ${cls.topic} on ${dateStr}`;
+            list.appendChild(li);
+          });
         }
-
-        function showSection(sectionName) {
-            // Hide all sections
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.add('hidden');
-            });
-            
-            // Show selected section
-            const targetSection = document.getElementById(sectionName + '-section');
-            if (targetSection) {
-                targetSection.classList.remove('hidden');
-            }
-            
-            // Update sidebar active state
-            document.querySelectorAll('nav a').forEach(link => {
-                link.classList.remove('bg-blue-50', 'text-blue-600');
-                link.classList.add('text-gray-700');
-            });
-            
-            // Add active state to clicked link
-            event.target.classList.add('bg-blue-50', 'text-blue-600');
-            event.target.classList.remove('text-gray-700');
-            
-            // Close mobile sidebar
-            if (window.innerWidth < 768) {
-                toggleMobileSidebar();
-            }
-        }
-
-        function initializeClassPerformanceChart() {
-            const chartDom = document.getElementById('classPerformanceChart');
-            if (!chartDom) return;
-            
-            const myChart = echarts.init(chartDom);
-            
-            const option = {
-                tooltip: {
-                    trigger: 'axis'
-                },
-                legend: {
-                    data: ['Advanced Calculus', 'Python Programming', 'Organic Chemistry']
-                },
-                xAxis: {
-                    type: 'category',
-                    data: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8']
-                },
-                yAxis: {
-                    type: 'value',
-                    min: 0,
-                    max: 100
-                },
-                series: [
-                    {
-                        name: 'Advanced Calculus',
-                        type: 'line',
-                        data: [78, 82, 85, 88, 87, 90, 92, 89],
-                        smooth: true,
-                        itemStyle: { color: '#3b82f6' }
-                    },
-                    {
-                        name: 'Python Programming',
-                        type: 'line',
-                        data: [85, 88, 90, 87, 92, 94, 96, 93],
-                        smooth: true,
-                        itemStyle: { color: '#10b981' }
-                    },
-                    {
-                        name: 'Organic Chemistry',
-                        type: 'line',
-                        data: [72, 75, 78, 80, 82, 85, 87, 85],
-                        smooth: true,
-                        itemStyle: { color: '#8b5cf6' }
-                    }
-                ]
-            };
-            
-            myChart.setOption(option);
-        }
-
-        function initializeCalendar() {
-            const calendarGrid = document.getElementById('calendar-grid');
-            if (!calendarGrid) return;
-            
-            const today = new Date();
-            const currentMonth = today.getMonth();
-            const currentYear = today.getFullYear();
-            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            
-            // Sample class dates
-            const classDates = [15, 18, 22, 25, 29];
-            
-            let calendarHTML = '';
-            
-            // Empty cells for days before the first day of the month
-            for (let i = 0; i < firstDay; i++) {
-                calendarHTML += '<div class="calendar-day p-2 text-center text-gray-400"></div>';
-            }
-            
-            // Days of the month
-            for (let day = 1; day <= daysInMonth; day++) {
-                const isToday = day === today.getDate();
-                const hasClass = classDates.includes(day);
-                const classes = `calendar-day p-2 text-center cursor-pointer border rounded ${
-                    isToday ? 'bg-blue-600 text-white' : 
-                    hasClass ? 'has-class border-blue-500' : 
-                    'hover:bg-gray-100'
-                }`;
-                
-                calendarHTML += `<div class="${classes}" onclick="selectCalendarDay(${day})">${day}</div>`;
-            }
-            
-            calendarGrid.innerHTML = calendarHTML;
-        }
-
-        function selectCalendarDay(day) {
-            // Remove previous selection
-            document.querySelectorAll('.calendar-day').forEach(el => {
-                el.classList.remove('selected');
-            });
-            
-            // Add selection to clicked day
-            event.target.classList.add('selected');
-            
-            showNotification(`Selected December ${day}`, 'info');
-        }
-
-        function toggleMobileSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('hidden');
-        }
-
-        // Modal functions
-        function showCreateAssignmentModal() {
-            document.getElementById('createAssignmentModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function hideCreateAssignmentModal() {
-            document.getElementById('createAssignmentModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
-        function showScheduleClassModal() {
-            showNotification('Schedule Class feature coming soon!', 'info');
-        }
-
-        function showUploadMaterialModal() {
-            showNotification('Upload Material feature coming soon!', 'info');
-        }
-
-        function showGradeAssignmentsModal() {
-            showNotification('Grade Assignments feature coming soon!', 'info');
-        }
-
-        function handleCreateAssignment(event) {
-            event.preventDefault();
-            showNotification('Assignment created successfully!', 'success');
-            hideCreateAssignmentModal();
-        }
-
-        // Notification system
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white max-w-sm ${
-                type === 'success' ? 'bg-green-500' : 
-                type === 'error' ? 'bg-red-500' : 
-                'bg-blue-500'
-            }`;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            // Animate in
-            anime({
-                targets: notification,
-                translateX: [300, 0],
-                opacity: [0, 1],
-                duration: 300,
-                easing: 'easeOutQuart'
-            });
-            
-            // Remove after delay
-            setTimeout(() => {
-                anime({
-                    targets: notification,
-                    translateX: [0, 300],
-                    opacity: [1, 0],
-                    duration: 300,
-                    easing: 'easeInQuart',
-                    complete: () => {
-                        document.body.removeChild(notification);
-                    }
-                });
-            }, 3000);
-        }
-    </script>
+      }
+      loadTeacherUpcoming();
+    });
+  </script>
+  <script src="script.js"></script>
 </body>
 </html>
